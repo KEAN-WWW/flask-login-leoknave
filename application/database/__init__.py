@@ -7,17 +7,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
-
 class User(db.Model, UserMixin):
     """User Model"""
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(128))
-    password = db.Column(db.String(128))
+    email = db.Column(db.String(128), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
 
-    def __init__(self, email, password, active=True):
+    def __init__(self, email, password):
         self.email = email
-        self.password = User.set_password(password)
-        self.active = active
+        self.password = self.set_password(password)
 
     @classmethod
     def create(cls, email, password):
@@ -43,16 +41,9 @@ class User(db.Model, UserMixin):
         db.session.add(self)
         return db.session.commit()
 
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
+    def check_password(self, password_input):
+        return check_password_hash(self.password, password_input)
 
     @staticmethod
     def set_password(password):
         return generate_password_hash(password)
-
-
-    def is_authenticated(self):
-        return self.authenticated
-
-    # def get_id(self):
-    #     return self.id
